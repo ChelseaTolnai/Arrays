@@ -180,6 +180,70 @@ void arr_print(Array *arr) {
 }
 
 
+/************************************
+ *
+ *   STRETCH -- ARRAY FUNCTIONS
+ *
+ ************************************/
+
+void arr_clear(Array *arr) {
+  for (int i=0; i < arr->count; i++){
+    free(arr->elements[i]);
+  }
+  free(arr->elements);
+  arr->count = 0;
+}
+
+Array *arr_copy(Array *arr) {
+  Array *arr_dup = create_array(arr->capacity);
+  arr_dup->count = arr->count;
+  for (int i=0; i < arr_dup->count; i++) {
+    arr_dup->elements[i] = strdup(arr->elements[i]);
+  }
+  return arr_dup;
+}
+
+void arr_extend(Array *arr, Array *arr2) {
+  for (int i=0; i < arr2->count; i++) {
+    arr_append(arr, arr2->elements[i]);
+  }
+}
+
+int arr_index(Array *arr, char *element) {
+  for (int i=0 ; i < arr->count ; i++) {
+    if (strcmp(arr->elements[i], element) == 0) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+char *arr_pop(Array *arr, int index) {
+  if ((index >= arr->count) || (-index > arr->count) ) {
+    perror("index out of range");
+    return NULL;
+  } else {
+    int i = index >= 0 ? index : arr->count + index;
+
+    char *element = arr->elements[i];
+    free(arr->elements[i]);
+    for (int j=i ; j < arr->count-1 ; j++) {
+      arr->elements[j] = arr->elements[j+1];
+    }
+    arr->count -= 1;
+    return element;
+  }
+}
+
+void arr_reverse(Array *arr) {
+  Array *arr_temp = arr_copy(arr);
+  for (int i=0; i < arr->count; i++) {
+    arr->elements[i] = strdup(arr_temp->elements[arr->count-1-i]);
+  }
+  destroy_array(arr_temp);
+}
+
+
 #ifndef TESTING
 int main(void)
 {
@@ -192,6 +256,48 @@ int main(void)
   arr_insert(arr, "STRING3", 1);
   arr_print(arr);
   arr_remove(arr, "STRING3");
+  arr_print(arr);
+
+  Array *arr_dup = arr_copy(arr);
+  printf("Array: ");
+  arr_print(arr);
+  printf("Array Copy: ");
+  arr_print(arr_dup);
+
+  arr_clear(arr_dup);
+  printf("Array Copy Clear: ");
+  arr_print(arr_dup);
+
+  Array *arr_2 = arr_copy(arr);
+  printf("Array: ");
+  arr_print(arr);
+  printf("Array Copy: ");
+  arr_print(arr_2);
+  arr_extend(arr, arr_2);
+  printf("Array Extend Array Copy: ");
+  arr_print(arr);
+
+  int index_exists = arr_index(arr, "STRING1");
+  printf("Index of STRING1 should be 1: %d\n", index_exists);
+  int index_no_exists = arr_index(arr, "STRING3");
+  printf("Index of STRING3 should be -1: %d\n", index_no_exists);
+
+  char* pop_out_range_neg = arr_pop(arr, -8);
+  printf("%s\n", pop_out_range_neg);
+  char*  pop_out_range_pos = arr_pop(arr, 10);
+  printf("%s\n", pop_out_range_pos);
+  char*  pop_in_range_mid = arr_pop(arr, 3);
+  printf("%s\n", pop_in_range_mid); 
+  char*  pop_in_range_last = arr_pop(arr, (arr->count-1));
+  printf("%s\n", pop_in_range_last);   
+  arr_pop(arr, 0);
+  arr_pop(arr, (arr->count-1));
+  arr_insert(arr, "STRING2", 1);
+  printf("Array after Pops: ");
+  arr_print(arr);
+
+  arr_reverse(arr);
+  printf("Array after Reverse: ");
   arr_print(arr);
 
   destroy_array(arr);
